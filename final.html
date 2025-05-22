@@ -1,0 +1,1383 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory Listings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .search-container {
+            transition: all 0.3s ease;
+        }
+        
+        .search-sticky {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .filter-pill {
+            transition: all 0.2s ease;
+        }
+        
+        .filter-pill:hover {
+            transform: scale(1.05);
+        }
+        
+        .filter-pill.active {
+            background-color: #4F46E5;
+            color: white;
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        
+        .dark {
+            background-color: #1F2937;
+            color: #F9FAFB;
+        }
+        
+        .dark .card {
+            background-color: #374151;
+            color: #F9FAFB;
+        }
+        
+        .dark .search-container {
+            background-color: #111827;
+        }
+        
+        .dark .modal-content {
+            background-color: #374151;
+            color: #F9FAFB;
+        }
+        
+        .loader {
+            border-top-color: #4F46E5;
+            animation: spinner 0.6s linear infinite;
+        }
+        
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+            <div class="container mx-auto px-4 py-16 md:py-24">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4 text-center">Find What You Need</h1>
+                <p class="text-xl text-center mb-8 opacity-90">Discover local businesses and services in your area</p>
+                
+                <!-- Main Search Bar -->
+                <div class="max-w-3xl mx-auto relative">
+                    <div class="flex flex-col md:flex-row gap-2">
+                        <div class="flex-1 relative">
+                            <input 
+                                type="text" 
+                                id="main-search" 
+                                placeholder="Search businesses, services, or keywords..." 
+                                class="w-full px-5 py-4 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-lg"
+                            >
+                            <button id="clear-search" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <button 
+                            id="search-button"
+                            class="bg-indigo-800 hover:bg-indigo-900 text-white px-8 py-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center"
+                        >
+                            <i class="fas fa-search mr-2"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Container (becomes sticky after scroll) -->
+        <div id="search-container" class="bg-white py-4 border-b border-gray-200 search-container">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                    <!-- Search Bar (Compact) -->
+                    <div class="flex flex-1 max-w-2xl">
+                        <input 
+                            type="text" 
+                            id="compact-search" 
+                            placeholder="Search..." 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        >
+                        <button 
+                            id="compact-search-button"
+                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-r-lg"
+                        >
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Filters Toggle Button (Mobile) -->
+                    <button 
+                        id="filter-toggle" 
+                        class="md:hidden bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg flex items-center"
+                    >
+                        <i class="fas fa-filter mr-2"></i> Filters
+                    </button>
+                    
+                    <!-- Filter Controls (Desktop) -->
+                    <div id="filter-controls" class="hidden md:flex flex-wrap gap-2 items-center">
+                        <!-- Category Filter -->
+                        <div class="relative">
+                            <select id="category-filter" class="appearance-none bg-gray-100 px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                <option value="">All Categories</option>
+                                <!-- Categories will be populated dynamically -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Location Filter -->
+                        <div class="relative">
+                            <select id="location-filter" class="appearance-none bg-gray-100 px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                <option value="">All Locations</option>
+                                <!-- Locations will be populated dynamically -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Rating Filter -->
+                        <div class="relative">
+                            <select id="rating-filter" class="appearance-none bg-gray-100 px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                <option value="">Any Rating</option>
+                                <option value="5">5 Stars</option>
+                                <option value="4">4+ Stars</option>
+                                <option value="3">3+ Stars</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Clear Filters -->
+                        <button 
+                            id="clear-filters"
+                            class="bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-lg text-sm"
+                        >
+                            <i class="fas fa-times mr-1"></i> Clear
+                        </button>
+                        
+                        <!-- Dark Mode Toggle -->
+                        <button 
+                            id="dark-mode-toggle"
+                            class="bg-gray-800 text-white hover:bg-gray-700 px-3 py-2 rounded-lg ml-2"
+                        >
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Mobile Filters (Hidden by default) -->
+                <div id="mobile-filters" class="md:hidden mt-4 hidden">
+                    <div class="flex flex-col gap-3">
+                        <div class="font-medium text-gray-700">Filters</div>
+                        
+                        <!-- Category Filter -->
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Category</label>
+                            <select id="mobile-category-filter" class="w-full appearance-none bg-gray-100 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                <option value="">All Categories</option>
+                                <!-- Categories will be populated dynamically -->
+                            </select>
+                        </div>
+                        
+                        <!-- Location Filter -->
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Location</label>
+                            <select id="mobile-location-filter" class="w-full appearance-none bg-gray-100 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                <option value="">All Locations</option>
+                                <!-- Locations will be populated dynamically -->
+                            </select>
+                        </div>
+                        
+                        <!-- Rating Filter -->
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Rating</label>
+                            <select id="mobile-rating-filter" class="w-full appearance-none bg-gray-100 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                <option value="">Any Rating</option>
+                                <option value="5">5 Stars</option>
+                                <option value="4">4+ Stars</option>
+                                <option value="3">3+ Stars</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex gap-2 mt-2">
+                            <!-- Apply Filters -->
+                            <button 
+                                id="apply-mobile-filters"
+                                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
+                            >
+                                Apply Filters
+                            </button>
+                            
+                            <!-- Clear Filters -->
+                            <button 
+                                id="clear-mobile-filters"
+                                class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg"
+                            >
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Pills (Optional) -->
+        <div class="container mx-auto px-4 py-6">
+            <div id="category-pills" class="flex flex-wrap gap-2">
+                <!-- Category pills will be populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="container mx-auto px-4 py-6">
+            <!-- Results Stats -->
+            <div id="results-stats" class="mb-6 flex justify-between items-center">
+                <div>
+                    <span id="results-count" class="font-medium">0</span> results found
+                </div>
+                <div class="flex items-center">
+                    <label for="sort-by" class="mr-2 text-sm text-gray-600">Sort by:</label>
+                    <select id="sort-by" class="appearance-none bg-gray-100 px-3 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm">
+                        <option value="relevance">Relevance</option>
+                        <option value="name">Name (A-Z)</option>
+                        <option value="rating">Rating (High-Low)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Loading Indicator -->
+            <div id="loading" class="flex justify-center py-12 hidden">
+                <div class="loader h-12 w-12 rounded-full border-4 border-gray-200"></div>
+            </div>
+            
+            <!-- No Results Message -->
+            <div id="no-results" class="text-center py-12 hidden">
+                <div class="text-5xl mb-4">🔍</div>
+                <h3 class="text-xl font-medium mb-2">No results found</h3>
+                <p class="text-gray-600">Try adjusting your search or filters</p>
+            </div>
+            
+            <!-- Results Grid -->
+            <div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Results will be populated dynamically -->
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="container mx-auto px-4 py-8">
+            <div id="pagination" class="flex justify-center items-center gap-2">
+                <!-- Pagination will be populated dynamically -->
+            </div>
+        </div>
+        
+        <!-- Detail Modal -->
+        <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden modal">
+            <div class="modal-content bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div id="modal-loading" class="flex justify-center py-12">
+                    <div class="loader h-12 w-12 rounded-full border-4 border-gray-200"></div>
+                </div>
+                
+                <div id="modal-content" class="hidden">
+                    <!-- Modal content will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data for development (will be replaced with Google Sheets API)
+        const mockData = [
+            {
+                id: 1,
+                name: "Green Leaf Cafe",
+                category: "Restaurant",
+                location: "Downtown",
+                address: "123 Main St, Downtown",
+                phone: "+1 (555) 123-4567",
+                email: "info@greenleafcafe.com",
+                description: "A cozy cafe serving organic food and specialty coffee in a relaxed atmosphere.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?cafe",
+                openingHours: "Mon-Fri: 7am-8pm, Sat-Sun: 8am-6pm",
+                services: ["Breakfast", "Lunch", "Coffee", "Wifi"],
+                rating: 4.5,
+                reviews: [
+                    { author: "John D.", text: "Great atmosphere and amazing coffee!", rating: 5 },
+                    { author: "Sarah M.", text: "Delicious food but service was a bit slow.", rating: 4 }
+                ]
+            },
+            {
+                id: 2,
+                name: "Tech Solutions Inc",
+                category: "Technology",
+                location: "Midtown",
+                address: "456 Tech Blvd, Midtown",
+                phone: "+1 (555) 987-6543",
+                email: "support@techsolutions.com",
+                description: "Professional IT services and computer repair for businesses and individuals.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?technology",
+                openingHours: "Mon-Fri: 9am-6pm, Sat: 10am-4pm",
+                services: ["IT Support", "Computer Repair", "Network Setup", "Data Recovery"],
+                rating: 4.8,
+                reviews: [
+                    { author: "Michael R.", text: "Fixed my laptop in record time. Highly recommended!", rating: 5 },
+                    { author: "Lisa T.", text: "Great service and reasonable prices.", rating: 5 }
+                ]
+            },
+            {
+                id: 3,
+                name: "Fitness First Gym",
+                category: "Fitness",
+                location: "Uptown",
+                address: "789 Fitness Ave, Uptown",
+                phone: "+1 (555) 234-5678",
+                email: "info@fitnessfirst.com",
+                description: "Modern gym with state-of-the-art equipment, classes, and personal training.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?gym",
+                openingHours: "Mon-Fri: 5am-10pm, Sat-Sun: 7am-8pm",
+                services: ["Cardio", "Weights", "Classes", "Personal Training", "Sauna"],
+                rating: 4.2,
+                reviews: [
+                    { author: "Chris P.", text: "Great equipment but can get crowded after work hours.", rating: 4 },
+                    { author: "Emma S.", text: "Love the classes and trainers!", rating: 5 }
+                ]
+            },
+            {
+                id: 4,
+                name: "Bella's Beauty Salon",
+                category: "Beauty",
+                location: "Downtown",
+                address: "321 Beauty Lane, Downtown",
+                phone: "+1 (555) 876-5432",
+                email: "appointments@bellasbeauty.com",
+                description: "Full-service beauty salon offering hair styling, manicures, pedicures, and facials.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?salon",
+                openingHours: "Tue-Sat: 10am-7pm",
+                services: ["Hair Styling", "Manicure", "Pedicure", "Facial", "Waxing"],
+                rating: 4.7,
+                reviews: [
+                    { author: "Jennifer L.", text: "Best haircut I've ever had!", rating: 5 },
+                    { author: "Robert K.", text: "Professional service in a relaxing environment.", rating: 5 }
+                ]
+            },
+            {
+                id: 5,
+                name: "Legal Eagles Law Firm",
+                category: "Legal",
+                location: "Midtown",
+                address: "555 Justice Rd, Midtown",
+                phone: "+1 (555) 222-3333",
+                email: "contact@legaleagles.com",
+                description: "Experienced attorneys specializing in family law, real estate, and business contracts.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?law",
+                openingHours: "Mon-Fri: 9am-5pm",
+                services: ["Family Law", "Real Estate", "Business Law", "Wills & Estates"],
+                rating: 4.9,
+                reviews: [
+                    { author: "Thomas B.", text: "Excellent legal advice during a difficult time.", rating: 5 },
+                    { author: "Patricia M.", text: "Very knowledgeable and professional team.", rating: 5 }
+                ]
+            },
+            {
+                id: 6,
+                name: "Fresh Market Grocery",
+                category: "Shopping",
+                location: "Uptown",
+                address: "888 Market St, Uptown",
+                phone: "+1 (555) 444-5555",
+                email: "info@freshmarket.com",
+                description: "Local grocery store with fresh produce, organic options, and specialty foods.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?grocery",
+                openingHours: "Daily: 7am-10pm",
+                services: ["Fresh Produce", "Deli", "Bakery", "Organic Foods"],
+                rating: 4.3,
+                reviews: [
+                    { author: "David W.", text: "Great selection of fresh produce.", rating: 4 },
+                    { author: "Nancy T.", text: "Love their bakery section!", rating: 5 }
+                ]
+            },
+            {
+                id: 7,
+                name: "Paws & Claws Veterinary",
+                category: "Pets",
+                location: "Midtown",
+                address: "777 Pet Blvd, Midtown",
+                phone: "+1 (555) 789-0123",
+                email: "care@pawsandclaws.com",
+                description: "Compassionate veterinary care for all types of pets with emergency services available.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?veterinary",
+                openingHours: "Mon-Sat: 8am-6pm, Emergency: 24/7",
+                services: ["Check-ups", "Vaccinations", "Surgery", "Dental Care", "Boarding"],
+                rating: 4.8,
+                reviews: [
+                    { author: "Karen L.", text: "Dr. Smith is amazing with my anxious cat!", rating: 5 },
+                    { author: "Mark R.", text: "Professional and caring staff.", rating: 5 }
+                ]
+            },
+            {
+                id: 8,
+                name: "Sunshine Daycare",
+                category: "Education",
+                location: "Downtown",
+                address: "444 Child St, Downtown",
+                phone: "+1 (555) 345-6789",
+                email: "info@sunshinedaycare.com",
+                description: "Licensed childcare center providing a safe, nurturing environment for children ages 6 weeks to 5 years.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?daycare",
+                openingHours: "Mon-Fri: 6:30am-6pm",
+                services: ["Infant Care", "Toddler Program", "Preschool", "Meals Provided"],
+                rating: 4.6,
+                reviews: [
+                    { author: "Michelle P.", text: "My daughter loves going here every day!", rating: 5 },
+                    { author: "James T.", text: "Caring staff and great curriculum.", rating: 4 }
+                ]
+            },
+            {
+                id: 9,
+                name: "Auto Care Experts",
+                category: "Automotive",
+                location: "Uptown",
+                address: "999 Motor Ave, Uptown",
+                phone: "+1 (555) 567-8901",
+                email: "service@autocareexperts.com",
+                description: "Full-service auto repair shop with certified mechanics and fair pricing.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?mechanic",
+                openingHours: "Mon-Fri: 8am-6pm, Sat: 9am-3pm",
+                services: ["Oil Change", "Brake Service", "Engine Repair", "Tire Replacement", "Diagnostics"],
+                rating: 4.4,
+                reviews: [
+                    { author: "Richard M.", text: "Honest mechanics who don't overcharge.", rating: 5 },
+                    { author: "Susan K.", text: "Quick service but a bit pricey.", rating: 4 }
+                ]
+            },
+            {
+                id: 10,
+                name: "Evergreen Landscaping",
+                category: "Home Services",
+                location: "Midtown",
+                address: "222 Garden Rd, Midtown",
+                phone: "+1 (555) 678-9012",
+                email: "info@evergreenlandscaping.com",
+                description: "Professional landscaping services including design, maintenance, and installation.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?landscaping",
+                openingHours: "Mon-Fri: 7am-5pm",
+                services: ["Lawn Care", "Garden Design", "Tree Service", "Irrigation", "Hardscaping"],
+                rating: 4.7,
+                reviews: [
+                    { author: "William B.", text: "Transformed our backyard into an oasis!", rating: 5 },
+                    { author: "Elizabeth C.", text: "Reliable and professional service.", rating: 5 }
+                ]
+            },
+            {
+                id: 11,
+                name: "City Dental Care",
+                category: "Healthcare",
+                location: "Downtown",
+                address: "111 Smile Ave, Downtown",
+                phone: "+1 (555) 890-1234",
+                email: "appointments@citydentalcare.com",
+                description: "Modern dental practice offering preventive care, cosmetic dentistry, and emergency services.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?dental",
+                openingHours: "Mon-Thu: 8am-5pm, Fri: 8am-2pm",
+                services: ["Cleanings", "Fillings", "Crowns", "Whitening", "Implants"],
+                rating: 4.5,
+                reviews: [
+                    { author: "Daniel R.", text: "Dr. Johnson is gentle and thorough.", rating: 5 },
+                    { author: "Laura M.", text: "Great with kids and anxious patients.", rating: 4 }
+                ]
+            },
+            {
+                id: 12,
+                name: "Cozy Corner Bookstore",
+                category: "Shopping",
+                location: "Uptown",
+                address: "333 Book Lane, Uptown",
+                phone: "+1 (555) 901-2345",
+                email: "books@cozycorner.com",
+                description: "Independent bookstore with a wide selection of new and used books, plus a coffee corner.",
+                imageUrl: "https://source.unsplash.com/random/300x200/?bookstore",
+                openingHours: "Mon-Sat: 10am-8pm, Sun: 12pm-6pm",
+                services: ["New Books", "Used Books", "Book Club", "Author Events", "Coffee Bar"],
+                rating: 4.9,
+                reviews: [
+                    { author: "Margaret L.", text: "My favorite place to spend a rainy afternoon!", rating: 5 },
+                    { author: "Steven P.", text: "Great selection and knowledgeable staff.", rating: 5 }
+                ]
+            }
+        ];
+
+        // App state
+        let state = {
+            listings: [],
+            filteredListings: [],
+            categories: [],
+            locations: [],
+            currentPage: 1,
+            itemsPerPage: 9,
+            searchQuery: '',
+            filters: {
+                category: '',
+                location: '',
+                rating: ''
+            },
+            darkMode: false
+        };
+
+        // DOM Elements
+        const elements = {
+            mainSearch: document.getElementById('main-search'),
+            compactSearch: document.getElementById('compact-search'),
+            searchButton: document.getElementById('search-button'),
+            compactSearchButton: document.getElementById('compact-search-button'),
+            clearSearch: document.getElementById('clear-search'),
+            searchContainer: document.getElementById('search-container'),
+            filterToggle: document.getElementById('filter-toggle'),
+            filterControls: document.getElementById('filter-controls'),
+            mobileFilters: document.getElementById('mobile-filters'),
+            categoryFilter: document.getElementById('category-filter'),
+            locationFilter: document.getElementById('location-filter'),
+            ratingFilter: document.getElementById('rating-filter'),
+            mobileCategoryFilter: document.getElementById('mobile-category-filter'),
+            mobileLocationFilter: document.getElementById('mobile-location-filter'),
+            mobileRatingFilter: document.getElementById('mobile-rating-filter'),
+            clearFilters: document.getElementById('clear-filters'),
+            clearMobileFilters: document.getElementById('clear-mobile-filters'),
+            applyMobileFilters: document.getElementById('apply-mobile-filters'),
+            categoryPills: document.getElementById('category-pills'),
+            resultsGrid: document.getElementById('results-grid'),
+            resultsCount: document.getElementById('results-count'),
+            loading: document.getElementById('loading'),
+            noResults: document.getElementById('no-results'),
+            pagination: document.getElementById('pagination'),
+            sortBy: document.getElementById('sort-by'),
+            detailModal: document.getElementById('detail-modal'),
+            modalContent: document.getElementById('modal-content'),
+            modalLoading: document.getElementById('modal-loading'),
+            darkModeToggle: document.getElementById('dark-mode-toggle')
+        };
+
+        // Initialize the app
+        function init() {
+            // Load data (mock for now, will be replaced with Google Sheets API)
+            loadData();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Check for dark mode preference
+            checkDarkModePreference();
+        }
+
+        // Load data from API (mock for now)
+        function loadData() {
+            showLoading(true);
+            
+            // Simulate API call
+            setTimeout(() => {
+                state.listings = mockData;
+                state.filteredListings = [...mockData];
+                
+                // Extract unique categories and locations
+                state.categories = [...new Set(mockData.map(item => item.category))];
+                state.locations = [...new Set(mockData.map(item => item.location))];
+                
+                // Populate filters
+                populateFilters();
+                
+                // Populate category pills
+                populateCategoryPills();
+                
+                // Render results
+                renderResults();
+                
+                showLoading(false);
+            }, 1000);
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Search functionality
+            elements.searchButton.addEventListener('click', handleSearch);
+            elements.compactSearchButton.addEventListener('click', handleSearch);
+            elements.mainSearch.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') handleSearch();
+                toggleClearButton();
+            });
+            elements.compactSearch.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') handleSearch();
+            });
+            elements.clearSearch.addEventListener('click', clearSearch);
+            
+            // Filter functionality
+            elements.categoryFilter.addEventListener('change', applyFilters);
+            elements.locationFilter.addEventListener('change', applyFilters);
+            elements.ratingFilter.addEventListener('change', applyFilters);
+            elements.clearFilters.addEventListener('click', clearFilters);
+            
+            // Mobile filters
+            elements.filterToggle.addEventListener('click', toggleMobileFilters);
+            elements.applyMobileFilters.addEventListener('click', applyMobileFilters);
+            elements.clearMobileFilters.addEventListener('click', clearMobileFilters);
+            
+            // Sort functionality
+            elements.sortBy.addEventListener('change', sortResults);
+            
+            // Modal functionality
+            elements.detailModal.addEventListener('click', (e) => {
+                if (e.target === elements.detailModal) {
+                    closeModal();
+                }
+            });
+            
+            // Dark mode toggle
+            elements.darkModeToggle.addEventListener('click', toggleDarkMode);
+            
+            // Sticky search bar
+            window.addEventListener('scroll', handleScroll);
+        }
+
+        // Check for dark mode preference
+        function checkDarkModePreference() {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                toggleDarkMode();
+            }
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            document.body.classList.toggle('dark', state.darkMode);
+            
+            // Update icon
+            elements.darkModeToggle.innerHTML = state.darkMode ? 
+                '<i class="fas fa-sun"></i>' : 
+                '<i class="fas fa-moon"></i>';
+        }
+
+        // Handle scroll for sticky search bar
+        function handleScroll() {
+            if (window.scrollY > 300) {
+                elements.searchContainer.classList.add('search-sticky');
+            } else {
+                elements.searchContainer.classList.remove('search-sticky');
+            }
+        }
+
+        // Populate filter dropdowns
+        function populateFilters() {
+            // Categories
+            state.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                elements.categoryFilter.appendChild(option);
+                
+                const mobileOption = option.cloneNode(true);
+                elements.mobileCategoryFilter.appendChild(mobileOption);
+            });
+            
+            // Locations
+            state.locations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                elements.locationFilter.appendChild(option);
+                
+                const mobileOption = option.cloneNode(true);
+                elements.mobileLocationFilter.appendChild(mobileOption);
+            });
+        }
+
+        // Populate category pills
+        function populateCategoryPills() {
+            elements.categoryPills.innerHTML = '';
+            
+            // Add "All" pill
+            const allPill = document.createElement('button');
+            allPill.className = `filter-pill px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-sm font-medium ${state.filters.category === '' ? 'active' : ''}`;
+            allPill.textContent = 'All';
+            allPill.addEventListener('click', () => {
+                state.filters.category = '';
+                elements.categoryFilter.value = '';
+                elements.mobileCategoryFilter.value = '';
+                updateCategoryPills();
+                applyFilters();
+            });
+            elements.categoryPills.appendChild(allPill);
+            
+            // Add category pills
+            state.categories.forEach(category => {
+                const pill = document.createElement('button');
+                pill.className = `filter-pill px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 text-sm font-medium ${state.filters.category === category ? 'active' : ''}`;
+                pill.textContent = category;
+                pill.addEventListener('click', () => {
+                    state.filters.category = category;
+                    elements.categoryFilter.value = category;
+                    elements.mobileCategoryFilter.value = category;
+                    updateCategoryPills();
+                    applyFilters();
+                });
+                elements.categoryPills.appendChild(pill);
+            });
+        }
+
+        // Update active state of category pills
+        function updateCategoryPills() {
+            const pills = elements.categoryPills.querySelectorAll('.filter-pill');
+            pills.forEach(pill => {
+                if ((pill.textContent === 'All' && state.filters.category === '') || 
+                    pill.textContent === state.filters.category) {
+                    pill.classList.add('active');
+                } else {
+                    pill.classList.remove('active');
+                }
+            });
+        }
+
+        // Handle search
+        function handleSearch() {
+            const mainQuery = elements.mainSearch.value.trim();
+            const compactQuery = elements.compactSearch.value.trim();
+            
+            state.searchQuery = mainQuery || compactQuery;
+            elements.mainSearch.value = state.searchQuery;
+            elements.compactSearch.value = state.searchQuery;
+            
+            state.currentPage = 1;
+            applyFilters();
+            
+            // Scroll to results if searching from main search
+            if (mainQuery) {
+                const resultsOffset = elements.searchContainer.offsetTop;
+                window.scrollTo({
+                    top: resultsOffset - 20,
+                    behavior: 'smooth'
+                });
+            }
+            
+            toggleClearButton();
+        }
+
+        // Toggle clear button visibility
+        function toggleClearButton() {
+            if (elements.mainSearch.value.trim()) {
+                elements.clearSearch.style.display = 'block';
+            } else {
+                elements.clearSearch.style.display = 'none';
+            }
+        }
+
+        // Clear search
+        function clearSearch() {
+            elements.mainSearch.value = '';
+            elements.compactSearch.value = '';
+            state.searchQuery = '';
+            toggleClearButton();
+            applyFilters();
+        }
+
+        // Apply filters
+        function applyFilters() {
+            state.filters.category = elements.categoryFilter.value;
+            state.filters.location = elements.locationFilter.value;
+            state.filters.rating = elements.ratingFilter.value;
+            
+            filterListings();
+            updateCategoryPills();
+            renderResults();
+        }
+
+        // Apply mobile filters
+        function applyMobileFilters() {
+            state.filters.category = elements.mobileCategoryFilter.value;
+            state.filters.location = elements.mobileLocationFilter.value;
+            state.filters.rating = elements.mobileRatingFilter.value;
+            
+            elements.categoryFilter.value = state.filters.category;
+            elements.locationFilter.value = state.filters.location;
+            elements.ratingFilter.value = state.filters.rating;
+            
+            toggleMobileFilters();
+            filterListings();
+            updateCategoryPills();
+            renderResults();
+        }
+
+        // Clear filters
+        function clearFilters() {
+            elements.categoryFilter.value = '';
+            elements.locationFilter.value = '';
+            elements.ratingFilter.value = '';
+            
+            state.filters.category = '';
+            state.filters.location = '';
+            state.filters.rating = '';
+            
+            updateCategoryPills();
+            filterListings();
+            renderResults();
+        }
+
+        // Clear mobile filters
+        function clearMobileFilters() {
+            elements.mobileCategoryFilter.value = '';
+            elements.mobileLocationFilter.value = '';
+            elements.mobileRatingFilter.value = '';
+            
+            elements.categoryFilter.value = '';
+            elements.locationFilter.value = '';
+            elements.ratingFilter.value = '';
+            
+            state.filters.category = '';
+            state.filters.location = '';
+            state.filters.rating = '';
+            
+            updateCategoryPills();
+            filterListings();
+            renderResults();
+        }
+
+        // Toggle mobile filters
+        function toggleMobileFilters() {
+            elements.mobileFilters.classList.toggle('hidden');
+        }
+
+        // Filter listings based on search and filters
+        function filterListings() {
+            showLoading(true);
+            
+            state.filteredListings = state.listings.filter(listing => {
+                // Search query
+                const searchMatch = !state.searchQuery || 
+                    listing.name.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+                    listing.description.toLowerCase().includes(state.searchQuery.toLowerCase()) ||
+                    listing.services.some(service => service.toLowerCase().includes(state.searchQuery.toLowerCase()));
+                
+                // Category filter
+                const categoryMatch = !state.filters.category || listing.category === state.filters.category;
+                
+                // Location filter
+                const locationMatch = !state.filters.location || listing.location === state.filters.location;
+                
+                // Rating filter
+                const ratingMatch = !state.filters.rating || listing.rating >= parseInt(state.filters.rating);
+                
+                return searchMatch && categoryMatch && locationMatch && ratingMatch;
+            });
+            
+            // Sort results
+            sortResults();
+        }
+
+        // Sort results
+        function sortResults() {
+            const sortValue = elements.sortBy.value;
+            
+            switch (sortValue) {
+                case 'name':
+                    state.filteredListings.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'rating':
+                    state.filteredListings.sort((a, b) => b.rating - a.rating);
+                    break;
+                case 'relevance':
+                default:
+                    // If there's a search query, sort by relevance
+                    if (state.searchQuery) {
+                        state.filteredListings.sort((a, b) => {
+                            const aNameMatch = a.name.toLowerCase().includes(state.searchQuery.toLowerCase());
+                            const bNameMatch = b.name.toLowerCase().includes(state.searchQuery.toLowerCase());
+                            
+                            if (aNameMatch && !bNameMatch) return -1;
+                            if (!aNameMatch && bNameMatch) return 1;
+                            return b.rating - a.rating;
+                        });
+                    } else {
+                        // Default sort by rating
+                        state.filteredListings.sort((a, b) => b.rating - a.rating);
+                    }
+            }
+            
+            renderResults();
+        }
+
+        // Render results
+        function renderResults() {
+            const startIndex = (state.currentPage - 1) * state.itemsPerPage;
+            const endIndex = startIndex + state.itemsPerPage;
+            const currentPageItems = state.filteredListings.slice(startIndex, endIndex);
+            
+            // Update results count
+            elements.resultsCount.textContent = state.filteredListings.length;
+            
+            // Clear results grid
+            elements.resultsGrid.innerHTML = '';
+            
+            // Show no results message if needed
+            if (state.filteredListings.length === 0) {
+                elements.noResults.classList.remove('hidden');
+            } else {
+                elements.noResults.classList.add('hidden');
+                
+                // Render result cards
+                currentPageItems.forEach((listing, index) => {
+                    const card = createResultCard(listing);
+                    card.classList.add('fade-in');
+                    card.style.animationDelay = `${index * 0.1}s`;
+                    elements.resultsGrid.appendChild(card);
+                });
+            }
+            
+            // Render pagination
+            renderPagination();
+            
+            showLoading(false);
+        }
+
+        // Create result card
+        function createResultCard(listing) {
+            const card = document.createElement('div');
+            card.className = 'card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg';
+            
+            // Generate star rating HTML
+            const fullStars = Math.floor(listing.rating);
+            const hasHalfStar = listing.rating % 1 >= 0.5;
+            let starsHtml = '';
+            
+            for (let i = 0; i < 5; i++) {
+                if (i < fullStars) {
+                    starsHtml += '<i class="fas fa-star text-yellow-400"></i>';
+                } else if (i === fullStars && hasHalfStar) {
+                    starsHtml += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
+                } else {
+                    starsHtml += '<i class="far fa-star text-yellow-400"></i>';
+                }
+            }
+            
+            card.innerHTML = `
+                <div class="relative h-48 bg-gray-200">
+                    <img src="${listing.imageUrl}" alt="${listing.name}" class="w-full h-full object-cover">
+                    <div class="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded">
+                        ${listing.category}
+                    </div>
+                </div>
+                <div class="p-5">
+                    <h3 class="text-xl font-semibold mb-2">${listing.name}</h3>
+                    <div class="flex items-center mb-2">
+                        <div class="mr-1">${starsHtml}</div>
+                        <span class="text-gray-600 text-sm">(${listing.rating})</span>
+                    </div>
+                    <div class="flex items-center text-gray-600 mb-3">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        <span>${listing.location}</span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-2">${listing.description}</p>
+                    <div class="flex flex-wrap gap-1 mb-4">
+                        ${listing.services.slice(0, 3).map(service => 
+                            `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">${service}</span>`
+                        ).join('')}
+                        ${listing.services.length > 3 ? 
+                            `<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">+${listing.services.length - 3} more</span>` : 
+                            ''}
+                    </div>
+                    <button class="view-details w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded transition-colors duration-200" data-id="${listing.id}">
+                        View Details
+                    </button>
+                </div>
+            `;
+            
+            // Add event listener to view details button
+            card.querySelector('.view-details').addEventListener('click', () => {
+                openDetailModal(listing);
+            });
+            
+            return card;
+        }
+
+        // Render pagination
+        function renderPagination() {
+            elements.pagination.innerHTML = '';
+            
+            const totalPages = Math.ceil(state.filteredListings.length / state.itemsPerPage);
+            
+            if (totalPages <= 1) {
+                return;
+            }
+            
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.className = `px-3 py-1 rounded-md ${state.currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`;
+            prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevButton.disabled = state.currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (state.currentPage > 1) {
+                    state.currentPage--;
+                    renderResults();
+                    window.scrollTo({
+                        top: elements.searchContainer.offsetTop - 20,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+            elements.pagination.appendChild(prevButton);
+            
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, state.currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            // First page
+            if (startPage > 1) {
+                const firstPageButton = document.createElement('button');
+                firstPageButton.className = 'px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800';
+                firstPageButton.textContent = '1';
+                firstPageButton.addEventListener('click', () => {
+                    state.currentPage = 1;
+                    renderResults();
+                    window.scrollTo({
+                        top: elements.searchContainer.offsetTop - 20,
+                        behavior: 'smooth'
+                    });
+                });
+                elements.pagination.appendChild(firstPageButton);
+                
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'px-2 py-1 text-gray-500';
+                    ellipsis.textContent = '...';
+                    elements.pagination.appendChild(ellipsis);
+                }
+            }
+            
+            // Page numbers
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = `px-3 py-1 rounded-md ${i === state.currentPage ? 'bg-indigo-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`;
+                pageButton.textContent = i;
+                pageButton.addEventListener('click', () => {
+                    state.currentPage = i;
+                    renderResults();
+                    window.scrollTo({
+                        top: elements.searchContainer.offsetTop - 20,
+                        behavior: 'smooth'
+                    });
+                });
+                elements.pagination.appendChild(pageButton);
+            }
+            
+            // Last page
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.className = 'px-2 py-1 text-gray-500';
+                    ellipsis.textContent = '...';
+                    elements.pagination.appendChild(ellipsis);
+                }
+                
+                const lastPageButton = document.createElement('button');
+                lastPageButton.className = 'px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800';
+                lastPageButton.textContent = totalPages;
+                lastPageButton.addEventListener('click', () => {
+                    state.currentPage = totalPages;
+                    renderResults();
+                    window.scrollTo({
+                        top: elements.searchContainer.offsetTop - 20,
+                        behavior: 'smooth'
+                    });
+                });
+                elements.pagination.appendChild(lastPageButton);
+            }
+            
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.className = `px-3 py-1 rounded-md ${state.currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`;
+            nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextButton.disabled = state.currentPage === totalPages;
+            nextButton.addEventListener('click', () => {
+                if (state.currentPage < totalPages) {
+                    state.currentPage++;
+                    renderResults();
+                    window.scrollTo({
+                        top: elements.searchContainer.offsetTop - 20,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+            elements.pagination.appendChild(nextButton);
+        }
+
+        // Open detail modal
+        function openDetailModal(listing) {
+            elements.detailModal.classList.remove('hidden');
+            elements.modalContent.classList.add('hidden');
+            elements.modalLoading.classList.remove('hidden');
+            
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
+            
+            // Simulate loading
+            setTimeout(() => {
+                elements.modalLoading.classList.add('hidden');
+                elements.modalContent.classList.remove('hidden');
+                
+                // Generate star rating HTML
+                const fullStars = Math.floor(listing.rating);
+                const hasHalfStar = listing.rating % 1 >= 0.5;
+                let starsHtml = '';
+                
+                for (let i = 0; i < 5; i++) {
+                    if (i < fullStars) {
+                        starsHtml += '<i class="fas fa-star text-yellow-400"></i>';
+                    } else if (i === fullStars && hasHalfStar) {
+                        starsHtml += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
+                    } else {
+                        starsHtml += '<i class="far fa-star text-yellow-400"></i>';
+                    }
+                }
+                
+                // Generate reviews HTML
+                let reviewsHtml = '';
+                if (listing.reviews && listing.reviews.length > 0) {
+                    reviewsHtml = `
+                        <div class="mt-8">
+                            <h3 class="text-xl font-semibold mb-4">Reviews</h3>
+                            <div class="space-y-4">
+                                ${listing.reviews.map(review => {
+                                    // Generate review stars
+                                    let reviewStarsHtml = '';
+                                    for (let i = 0; i < 5; i++) {
+                                        if (i < review.rating) {
+                                            reviewStarsHtml += '<i class="fas fa-star text-yellow-400 text-sm"></i>';
+                                        } else {
+                                            reviewStarsHtml += '<i class="far fa-star text-yellow-400 text-sm"></i>';
+                                        }
+                                    }
+                                    
+                                    return `
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <div class="flex items-center mb-2">
+                                                <div class="mr-2">${reviewStarsHtml}</div>
+                                                <span class="font-medium">${review.author}</span>
+                                            </div>
+                                            <p class="text-gray-600">${review.text}</p>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                elements.modalContent.innerHTML = `
+                    <div class="relative">
+                        <button id="close-modal" class="absolute top-4 right-4 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 text-gray-800 hover:text-gray-900 transition-all z-10">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        
+                        <div class="h-64 md:h-80 bg-gray-200">
+                            <img src="${listing.imageUrl}" alt="${listing.name}" class="w-full h-full object-cover">
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+                                <div>
+                                    <h2 class="text-2xl md:text-3xl font-bold mb-2">${listing.name}</h2>
+                                    <div class="flex items-center mb-2">
+                                        <div class="mr-2">${starsHtml}</div>
+                                        <span class="text-gray-600">(${listing.rating})</span>
+                                    </div>
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        <span>${listing.address}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-indigo-600 text-white text-sm font-bold px-3 py-1 rounded">
+                                    ${listing.category}
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-4">About</h3>
+                                    <p class="text-gray-600 mb-6">${listing.description}</p>
+                                    
+                                    <h3 class="text-xl font-semibold mb-4">Services</h3>
+                                    <div class="flex flex-wrap gap-2 mb-6">
+                                        ${listing.services.map(service => 
+                                            `<span class="bg-gray-100 text-gray-800 px-3 py-1 rounded">${service}</span>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div class="bg-gray-50 p-5 rounded-lg">
+                                        <h3 class="text-xl font-semibold mb-4">Contact Information</h3>
+                                        
+                                        <div class="space-y-4">
+                                            <div class="flex items-center">
+                                                <div class="bg-indigo-100 p-3 rounded-full mr-4">
+                                                    <i class="fas fa-phone text-indigo-600"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm text-gray-500">Phone</div>
+                                                    <a href="tel:${listing.phone}" class="text-indigo-600 hover:text-indigo-800">${listing.phone}</a>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center">
+                                                <div class="bg-indigo-100 p-3 rounded-full mr-4">
+                                                    <i class="fas fa-envelope text-indigo-600"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm text-gray-500">Email</div>
+                                                    <a href="mailto:${listing.email}" class="text-indigo-600 hover:text-indigo-800">${listing.email}</a>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="flex items-center">
+                                                <div class="bg-indigo-100 p-3 rounded-full mr-4">
+                                                    <i class="fas fa-clock text-indigo-600"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm text-gray-500">Hours</div>
+                                                    <div>${listing.openingHours}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${reviewsHtml}
+                        </div>
+                    </div>
+                `;
+                
+                // Add event listener to close button
+                document.getElementById('close-modal').addEventListener('click', closeModal);
+                
+                // Apply dark mode if active
+                if (state.darkMode) {
+                    elements.modalContent.classList.add('dark');
+                }
+            }, 500);
+        }
+
+        // Close detail modal
+        function closeModal() {
+            elements.detailModal.classList.add('hidden');
+            
+            // Restore body scrolling
+            document.body.style.overflow = '';
+        }
+
+        // Show/hide loading indicator
+        function showLoading(show) {
+            if (show) {
+                elements.loading.classList.remove('hidden');
+                elements.resultsGrid.classList.add('hidden');
+                elements.noResults.classList.add('hidden');
+            } else {
+                elements.loading.classList.add('hidden');
+                elements.resultsGrid.classList.remove('hidden');
+            }
+        }
+
+        // Initialize the app
+        init();
+
+        // Google Sheets API Integration (commented out for now)
+        /*
+        async function fetchDataFromGoogleSheets(sheetId, apiKey) {
+            try {
+                const response = await axios.get(
+                    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A:K?key=${apiKey}`
+                );
+                
+                const rows = response.data.values;
+                const headers = rows[0];
+                const data = [];
+                
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    const item = {};
+                    
+                    for (let j = 0; j < headers.length; j++) {
+                        item[headers[j].toLowerCase()] = row[j];
+                    }
+                    
+                    // Process data as needed
+                    if (item.services) {
+                        item.services = item.services.split(',').map(s => s.trim());
+                    } else {
+                        item.services = [];
+                    }
+                    
+                    if (item.rating) {
+                        item.rating = parseFloat(item.rating);
+                    } else {
+                        item.rating = 0;
+                    }
+                    
+                    // Add to data array
+                    data.push(item);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error fetching data from Google Sheets:', error);
+                return [];
+            }
+        }
+        */
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'942969d082f175df',t:'MTc0NzcxODcyNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
