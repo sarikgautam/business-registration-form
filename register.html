@@ -1,0 +1,1271 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Your Business - FindSab | Connect with Your Community</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #3730a3 0%, #4f46e5 50%, #6366f1 100%);
+        }
+        
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+        }
+        
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+        
+        .step-indicator.active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        
+        .step-indicator.completed {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .image-preview {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            border: 2px dashed #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .image-preview:hover {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+        
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .progress-bar {
+            height: 4px;
+            background-color: #e5e7eb;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #4f46e5;
+            transition: width 0.3s ease;
+        }
+        
+        .custom-checkbox {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        
+        .checkmark {
+            height: 20px;
+            width: 20px;
+            background-color: #fff;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .custom-checkbox:hover .checkmark {
+            border-color: #6366f1;
+        }
+        
+        .custom-checkbox input:checked ~ .checkmark {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+        
+        .checkmark:after {
+            content: "";
+            display: none;
+        }
+        
+        .custom-checkbox input:checked ~ .checkmark:after {
+            display: block;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            margin-bottom: 2px;
+        }
+        
+        .time-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        
+        .success-animation {
+            animation: scaleUp 0.5s ease-in-out;
+        }
+        
+        @keyframes scaleUp {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm fixed w-full z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <div class="bg-indigo-600 text-white p-2 rounded-lg mr-2">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <span class="text-xl font-bold text-gray-800">FindSab</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-600 hover:text-indigo-600 transition-colors">Home</a>
+                    <a href="directory.html" class="text-gray-600 hover:text-indigo-600 transition-colors">Directory</a>
+                    <a href="about.html" class="text-gray-600 hover:text-indigo-600 transition-colors">About Us</a>
+                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">How It Works</a>
+                    <a href="#" class="text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
+                </div>
+                
+                <div class="flex items-center">
+                    <a href="list-business.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors">
+                        List Your Business
+                    </a>
+                    <button id="mobile-menu-button" class="md:hidden ml-4 text-gray-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="md:hidden hidden mt-4 pb-2">
+                <a href="index.html" class="block py-2 text-gray-600 hover:text-indigo-600 transition-colors">Home</a>
+                <a href="directory.html" class="block py-2 text-gray-600 hover:text-indigo-600 transition-colors">Directory</a>
+                <a href="about.html" class="block py-2 text-gray-600 hover:text-indigo-600 transition-colors">About Us</a>
+                <a href="#" class="block py-2 text-gray-600 hover:text-indigo-600 transition-colors">How It Works</a>
+                <a href="#" class="block py-2 text-gray-600 hover:text-indigo-600 transition-colors">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-24 pb-16 md:pt-32 md:pb-24">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-white leading-tight mb-6 fade-in visible">
+                    List Your Business on FindSab
+                </h1>
+                <p class="text-indigo-100 text-xl mb-8 fade-in visible" style="transition-delay: 0.2s;">
+                    Join thousands of local businesses connecting with their community. Get discovered by potential customers looking for your services.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Form Section -->
+    <section class="py-16 -mt-10">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-10 fade-in visible" style="transition-delay: 0.4s;">
+                <!-- Progress Steps -->
+                <div class="mb-10">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center">
+                            <div id="step-indicator-1" class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mr-2">1</div>
+                            <span class="text-sm font-medium hidden sm:inline">Business Details</span>
+                        </div>
+                        <div class="flex-1 mx-4">
+                            <div class="progress-bar">
+                                <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div id="step-indicator-2" class="step-indicator w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium mr-2">2</div>
+                            <span class="text-sm font-medium hidden sm:inline">Contact & Location</span>
+                        </div>
+                        <div class="flex-1 mx-4">
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div id="step-indicator-3" class="step-indicator w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium mr-2">3</div>
+                            <span class="text-sm font-medium hidden sm:inline">Images & Services</span>
+                        </div>
+                        <div class="flex-1 mx-4">
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div id="step-indicator-4" class="step-indicator w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium mr-2">4</div>
+                            <span class="text-sm font-medium hidden sm:inline">Review</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="business-form">
+                    <!-- Step 1: Business Details -->
+                    <div id="step-1" class="form-step active">
+                        <h2 class="text-2xl font-semibold mb-6">Business Details</h2>
+                        
+                        <div class="mb-6">
+                            <label for="business-name" class="block text-gray-700 font-medium mb-2">Business Name*</label>
+                            <input type="text" id="business-name" name="business-name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Enter your business name" required>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="business-category" class="block text-gray-700 font-medium mb-2">Business Category*</label>
+                            <select id="business-category" name="business-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" required>
+                                <option value="" disabled selected>Select a category</option>
+                                <option value="restaurant">Restaurant & Café</option>
+                                <option value="retail">Retail & Shopping</option>
+                                <option value="health">Health & Wellness</option>
+                                <option value="professional">Professional Services</option>
+                                <option value="home">Home Services</option>
+                                <option value="beauty">Beauty & Personal Care</option>
+                                <option value="automotive">Automotive</option>
+                                <option value="education">Education & Training</option>
+                                <option value="entertainment">Entertainment & Recreation</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-6" id="other-category-container" style="display: none;">
+                            <label for="other-category" class="block text-gray-700 font-medium mb-2">Specify Category*</label>
+                            <input type="text" id="other-category" name="other-category" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Enter your business category">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="business-description" class="block text-gray-700 font-medium mb-2">Business Description*</label>
+                            <textarea id="business-description" name="business-description" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Tell potential customers about your business, services, and what makes you unique" required></textarea>
+                            <div class="text-right mt-1">
+                                <span id="description-chars" class="text-sm text-gray-500">0/500</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="year-established" class="block text-gray-700 font-medium mb-2">Year Established</label>
+                            <input type="number" id="year-established" name="year-established" min="1900" max="2023" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="e.g. 2010">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 font-medium mb-2">Business Type*</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <label class="custom-checkbox flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
+                                    <input type="radio" name="business-type" value="physical" required>
+                                    <span class="checkmark"></span>
+                                    <div>
+                                        <span class="font-medium">Physical Location</span>
+                                        <p class="text-sm text-gray-500 mt-1">Business with a physical address that customers can visit</p>
+                                    </div>
+                                </label>
+                                <label class="custom-checkbox flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
+                                    <input type="radio" name="business-type" value="online" required>
+                                    <span class="checkmark"></span>
+                                    <div>
+                                        <span class="font-medium">Online Business</span>
+                                        <p class="text-sm text-gray-500 mt-1">Business that operates primarily or exclusively online</p>
+                                    </div>
+                                </label>
+                                <label class="custom-checkbox flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
+                                    <input type="radio" name="business-type" value="mobile" required>
+                                    <span class="checkmark"></span>
+                                    <div>
+                                        <span class="font-medium">Mobile Business</span>
+                                        <p class="text-sm text-gray-500 mt-1">Business that travels to customers' locations</p>
+                                    </div>
+                                </label>
+                                <label class="custom-checkbox flex items-center p-4 border border-gray-300 rounded-lg cursor-pointer hover:border-indigo-500 transition-colors">
+                                    <input type="radio" name="business-type" value="hybrid" required>
+                                    <span class="checkmark"></span>
+                                    <div>
+                                        <span class="font-medium">Hybrid</span>
+                                        <p class="text-sm text-gray-500 mt-1">Combination of physical location and online/mobile services</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end">
+                            <button type="button" id="next-step-1" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                                Next Step
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Contact & Location -->
+                    <div id="step-2" class="form-step">
+                        <h2 class="text-2xl font-semibold mb-6">Contact & Location</h2>
+                        
+                        <div class="mb-6">
+                            <label for="contact-name" class="block text-gray-700 font-medium mb-2">Contact Person*</label>
+                            <input type="text" id="contact-name" name="contact-name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Full name of primary contact" required>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="contact-email" class="block text-gray-700 font-medium mb-2">Email Address*</label>
+                                <input type="email" id="contact-email" name="contact-email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="email@example.com" required>
+                            </div>
+                            <div>
+                                <label for="contact-phone" class="block text-gray-700 font-medium mb-2">Phone Number*</label>
+                                <input type="tel" id="contact-phone" name="contact-phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="e.g. 0412 345 678" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label for="business-website" class="block text-gray-700 font-medium mb-2">Website URL</label>
+                            <input type="url" id="business-website" name="business-website" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="https://www.example.com">
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="social-facebook" class="block text-gray-700 font-medium mb-2">Facebook</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                        <i class="fab fa-facebook-f text-gray-400"></i>
+                                    </div>
+                                    <input type="text" id="social-facebook" name="social-facebook" class="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Facebook page URL">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="social-instagram" class="block text-gray-700 font-medium mb-2">Instagram</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                        <i class="fab fa-instagram text-gray-400"></i>
+                                    </div>
+                                    <input type="text" id="social-instagram" name="social-instagram" class="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Instagram handle">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="location-fields">
+                            <h3 class="text-xl font-semibold mb-4">Business Location</h3>
+                            
+                            <div class="mb-6">
+                                <label for="address-line1" class="block text-gray-700 font-medium mb-2">Address Line 1*</label>
+                                <input type="text" id="address-line1" name="address-line1" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Street address" required>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="address-line2" class="block text-gray-700 font-medium mb-2">Address Line 2</label>
+                                <input type="text" id="address-line2" name="address-line2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Apartment, suite, unit, etc. (optional)">
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                <div>
+                                    <label for="city" class="block text-gray-700 font-medium mb-2">City/Suburb*</label>
+                                    <input type="text" id="city" name="city" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="City or suburb" required>
+                                </div>
+                                <div>
+                                    <label for="state" class="block text-gray-700 font-medium mb-2">State*</label>
+                                    <select id="state" name="state" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" required>
+                                        <option value="" disabled selected>Select state</option>
+                                        <option value="NSW">New South Wales</option>
+                                        <option value="VIC">Victoria</option>
+                                        <option value="QLD">Queensland</option>
+                                        <option value="WA">Western Australia</option>
+                                        <option value="SA">South Australia</option>
+                                        <option value="TAS">Tasmania</option>
+                                        <option value="ACT">Australian Capital Territory</option>
+                                        <option value="NT">Northern Territory</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="postcode" class="block text-gray-700 font-medium mb-2">Postcode*</label>
+                                    <input type="text" id="postcode" name="postcode" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Postcode" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="service-areas" class="block text-gray-700 font-medium mb-2">Service Areas</label>
+                                <textarea id="service-areas" name="service-areas" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="List suburbs or regions you serve (separate with commas)"></textarea>
+                                <p class="text-sm text-gray-500 mt-1">For mobile businesses or if you serve specific areas</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button type="button" id="prev-step-2" class="border border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Previous
+                            </button>
+                            <button type="button" id="next-step-2" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                                Next Step
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Images & Services -->
+                    <div id="step-3" class="form-step">
+                        <h2 class="text-2xl font-semibold mb-6">Images & Services</h2>
+                        
+                        <div class="mb-8">
+                            <label class="block text-gray-700 font-medium mb-4">Business Photos</label>
+                            <p class="text-gray-500 mb-4">Upload photos of your business, products, or services. High-quality images help attract more customers.</p>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                <div class="image-upload">
+                                    <input type="file" id="business-logo" name="business-logo" class="hidden" accept="image/*">
+                                    <label for="business-logo" class="image-preview flex flex-col items-center justify-center cursor-pointer">
+                                        <i class="fas fa-building text-2xl mb-2"></i>
+                                        <span>Logo</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="image-upload">
+                                    <input type="file" id="business-photo-1" name="business-photo-1" class="hidden" accept="image/*">
+                                    <label for="business-photo-1" class="image-preview flex flex-col items-center justify-center cursor-pointer">
+                                        <i class="fas fa-image text-2xl mb-2"></i>
+                                        <span>Storefront</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="image-upload">
+                                    <input type="file" id="business-photo-2" name="business-photo-2" class="hidden" accept="image/*">
+                                    <label for="business-photo-2" class="image-preview flex flex-col items-center justify-center cursor-pointer">
+                                        <i class="fas fa-image text-2xl mb-2"></i>
+                                        <span>Interior</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="image-upload">
+                                    <input type="file" id="business-photo-3" name="business-photo-3" class="hidden" accept="image/*">
+                                    <label for="business-photo-3" class="image-preview flex flex-col items-center justify-center cursor-pointer">
+                                        <i class="fas fa-image text-2xl mb-2"></i>
+                                        <span>Products</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="image-upload">
+                                    <input type="file" id="business-photo-4" name="business-photo-4" class="hidden" accept="image/*">
+                                    <label for="business-photo-4" class="image-preview flex flex-col items-center justify-center cursor-pointer">
+                                        <i class="fas fa-image text-2xl mb-2"></i>
+                                        <span>Team</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-2">Maximum file size: 5MB. Supported formats: JPG, PNG</p>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <label class="block text-gray-700 font-medium mb-4">Services & Products</label>
+                            <p class="text-gray-500 mb-4">List your main services or products to help customers understand what you offer.</p>
+                            
+                            <div id="services-container">
+                                <div class="service-item grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                    <div class="md:col-span-2">
+                                        <input type="text" name="service-name[]" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Service/Product Name">
+                                    </div>
+                                    <div>
+                                        <input type="text" name="service-price[]" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" placeholder="Price (optional)">
+                                    </div>
+                                    <div class="flex items-center">
+                                        <button type="button" class="remove-service text-gray-400 hover:text-red-500 transition-colors px-2" style="visibility: hidden;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="button" id="add-service" class="mt-2 text-indigo-600 hover:text-indigo-800 transition-colors flex items-center">
+                                <i class="fas fa-plus-circle mr-2"></i>
+                                Add Another Service/Product
+                            </button>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <label class="block text-gray-700 font-medium mb-4">Business Hours</label>
+                            
+                            <div class="grid grid-cols-1 gap-4">
+                                <div class="flex items-center mb-2">
+                                    <label class="custom-checkbox mr-4">
+                                        <input type="checkbox" id="hours-monday" name="hours-monday" checked>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <span class="w-24 font-medium">Monday</span>
+                                    <div class="flex items-center">
+                                        <select name="monday-open" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="06:00">6:00 AM</option>
+                                            <option value="07:00">7:00 AM</option>
+                                            <option value="08:00">8:00 AM</option>
+                                            <option value="09:00" selected>9:00 AM</option>
+                                            <option value="10:00">10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="12:00">12:00 PM</option>
+                                        </select>
+                                        <span class="mx-2">to</span>
+                                        <select name="monday-close" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                            <option value="17:00" selected>5:00 PM</option>
+                                            <option value="18:00">6:00 PM</option>
+                                            <option value="19:00">7:00 PM</option>
+                                            <option value="20:00">8:00 PM</option>
+                                            <option value="21:00">9:00 PM</option>
+                                            <option value="22:00">10:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center mb-2">
+                                    <label class="custom-checkbox mr-4">
+                                        <input type="checkbox" id="hours-tuesday" name="hours-tuesday" checked>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <span class="w-24 font-medium">Tuesday</span>
+                                    <div class="flex items-center">
+                                        <select name="tuesday-open" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="06:00">6:00 AM</option>
+                                            <option value="07:00">7:00 AM</option>
+                                            <option value="08:00">8:00 AM</option>
+                                            <option value="09:00" selected>9:00 AM</option>
+                                            <option value="10:00">10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="12:00">12:00 PM</option>
+                                        </select>
+                                        <span class="mx-2">to</span>
+                                        <select name="tuesday-close" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                            <option value="17:00" selected>5:00 PM</option>
+                                            <option value="18:00">6:00 PM</option>
+                                            <option value="19:00">7:00 PM</option>
+                                            <option value="20:00">8:00 PM</option>
+                                            <option value="21:00">9:00 PM</option>
+                                            <option value="22:00">10:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center mb-2">
+                                    <label class="custom-checkbox mr-4">
+                                        <input type="checkbox" id="hours-wednesday" name="hours-wednesday" checked>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <span class="w-24 font-medium">Wednesday</span>
+                                    <div class="flex items-center">
+                                        <select name="wednesday-open" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="06:00">6:00 AM</option>
+                                            <option value="07:00">7:00 AM</option>
+                                            <option value="08:00">8:00 AM</option>
+                                            <option value="09:00" selected>9:00 AM</option>
+                                            <option value="10:00">10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="12:00">12:00 PM</option>
+                                        </select>
+                                        <span class="mx-2">to</span>
+                                        <select name="wednesday-close" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                            <option value="17:00" selected>5:00 PM</option>
+                                            <option value="18:00">6:00 PM</option>
+                                            <option value="19:00">7:00 PM</option>
+                                            <option value="20:00">8:00 PM</option>
+                                            <option value="21:00">9:00 PM</option>
+                                            <option value="22:00">10:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center mb-2">
+                                    <label class="custom-checkbox mr-4">
+                                        <input type="checkbox" id="hours-thursday" name="hours-thursday" checked>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <span class="w-24 font-medium">Thursday</span>
+                                    <div class="flex items-center">
+                                        <select name="thursday-open" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="06:00">6:00 AM</option>
+                                            <option value="07:00">7:00 AM</option>
+                                            <option value="08:00">8:00 AM</option>
+                                            <option value="09:00" selected>9:00 AM</option>
+                                            <option value="10:00">10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="12:00">12:00 PM</option>
+                                        </select>
+                                        <span class="mx-2">to</span>
+                                        <select name="thursday-close" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                            <option value="17:00" selected>5:00 PM</option>
+                                            <option value="18:00">6:00 PM</option>
+                                            <option value="19:00">7:00 PM</option>
+                                            <option value="20:00">8:00 PM</option>
+                                            <option value="21:00">9:00 PM</option>
+                                            <option value="22:00">10:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center mb-2">
+                                    <label class="custom-checkbox mr-4">
+                                        <input type="checkbox" id="hours-friday" name="hours-friday" checked>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <span class="w-24 font-medium">Friday</span>
+                                    <div class="flex items-center">
+                                        <select name="friday-open" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="06:00">6:00 AM</option>
+                                            <option value="07:00">7:00 AM</option>
+                                            <option value="08:00">8:00 AM</option>
+                                            <option value="09:00" selected>9:00 AM</option>
+                                            <option value="10:00">10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="12:00">12:00 PM</option>
+                                        </select>
+                                        <span class="mx-2">to</span>
+                                        <select name="friday-close" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed">Closed</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                            <option value="17:00" selected>5:00 PM</option>
+                                            <option value="18:00">6:00 PM</option>
+                                            <option value="19:00">7:00 PM</option>
+                                            <option value="20:00">8:00 PM</option>
+                                            <option value="21:00">9:00 PM</option>
+                                            <option value="22:00">10:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center mb-2">
+                                    <label class="custom-checkbox mr-4">
+                                        <input type="checkbox" id="hours-saturday" name="hours-saturday">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <span class="w-24 font-medium">Saturday</span>
+                                    <div class="flex items-center">
+                                        <select name="saturday-open" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed" selected>Closed</option>
+                                            <option value="06:00">6:00 AM</option>
+                                            <option value="07:00">7:00 AM</option>
+                                            <option value="08:00">8:00 AM</option>
+                                            <option value="09:00">9:00 AM</option>
+                                            <option value="10:00">10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="12:00">12:00 PM</option>
+                                        </select>
+                                        <span class="mx-2">to</span>
+                                        <select name="saturday-close" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed" selected>Closed</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                            <option value="17:00">5:00 PM</option>
+                                            <option value="18:00">6:00 PM</option>
+                                            <option value="19:00">7:00 PM</option>
+                                            <option value="20:00">8:00 PM</option>
+                                            <option value="21:00">9:00 PM</option>
+                                            <option value="22:00">10:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <label class="custom-checkbox mr-4">
+                                        <input type="checkbox" id="hours-sunday" name="hours-sunday">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <span class="w-24 font-medium">Sunday</span>
+                                    <div class="flex items-center">
+                                        <select name="sunday-open" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed" selected>Closed</option>
+                                            <option value="06:00">6:00 AM</option>
+                                            <option value="07:00">7:00 AM</option>
+                                            <option value="08:00">8:00 AM</option>
+                                            <option value="09:00">9:00 AM</option>
+                                            <option value="10:00">10:00 AM</option>
+                                            <option value="11:00">11:00 AM</option>
+                                            <option value="12:00">12:00 PM</option>
+                                        </select>
+                                        <span class="mx-2">to</span>
+                                        <select name="sunday-close" class="time-select px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                                            <option value="closed" selected>Closed</option>
+                                            <option value="15:00">3:00 PM</option>
+                                            <option value="16:00">4:00 PM</option>
+                                            <option value="17:00">5:00 PM</option>
+                                            <option value="18:00">6:00 PM</option>
+                                            <option value="19:00">7:00 PM</option>
+                                            <option value="20:00">8:00 PM</option>
+                                            <option value="21:00">9:00 PM</option>
+                                            <option value="22:00">10:00 PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button type="button" id="prev-step-3" class="border border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Previous
+                            </button>
+                            <button type="button" id="next-step-3" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                                Review Submission
+                                <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4: Review -->
+                    <div id="step-4" class="form-step">
+                        <h2 class="text-2xl font-semibold mb-6">Review Your Business Information</h2>
+                        <p class="text-gray-600 mb-8">Please review your business information before submitting. You can go back to make changes if needed.</p>
+                        
+                        <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Business Details</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                                <div>
+                                    <p class="text-gray-500 text-sm">Business Name</p>
+                                    <p id="review-business-name" class="font-medium">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Category</p>
+                                    <p id="review-business-category" class="font-medium">-</p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <p class="text-gray-500 text-sm">Description</p>
+                                    <p id="review-business-description" class="font-medium">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Year Established</p>
+                                    <p id="review-year-established" class="font-medium">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Business Type</p>
+                                    <p id="review-business-type" class="font-medium">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Contact & Location</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                                <div>
+                                    <p class="text-gray-500 text-sm">Contact Person</p>
+                                    <p id="review-contact-name" class="font-medium">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Email</p>
+                                    <p id="review-contact-email" class="font-medium">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Phone</p>
+                                    <p id="review-contact-phone" class="font-medium">-</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Website</p>
+                                    <p id="review-business-website" class="font-medium">-</p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <p class="text-gray-500 text-sm">Address</p>
+                                    <p id="review-address" class="font-medium">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Images</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4" id="review-images">
+                                <div class="bg-gray-200 h-24 rounded-lg flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Services & Products</h3>
+                            <div id="review-services">
+                                <p class="text-gray-500">No services or products added.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Business Hours</h3>
+                            <div id="review-hours" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Hours will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="mb-8">
+                            <label class="custom-checkbox flex items-start">
+                                <input type="checkbox" id="terms-checkbox" name="terms-checkbox" required>
+                                <span class="checkmark mt-1"></span>
+                                <span class="ml-2">I confirm that I am authorized to share this business information and that it is accurate and up-to-date. I agree to FindSab's <a href="#" class="text-indigo-600 hover:text-indigo-800 transition-colors">Terms of Service</a> and <a href="#" class="text-indigo-600 hover:text-indigo-800 transition-colors">Privacy Policy</a>.</span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button type="button" id="prev-step-4" class="border border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Previous
+                            </button>
+                            <button type="submit" id="submit-form" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center">
+                                Submit Business
+                                <i class="fas fa-check ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <!-- Success Message (Hidden by default) -->
+                <div id="success-message" class="text-center py-10" style="display: none;">
+                    <div class="success-animation mb-6">
+                        <div class="bg-green-100 text-green-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto">
+                            <i class="fas fa-check-circle text-5xl"></i>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-4">Business Successfully Submitted!</h2>
+                    <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                        Thank you for listing your business with FindSab. Our team will review your submission and it will be live on our platform soon.
+                    </p>
+                    <div class="bg-gray-50 rounded-xl p-6 mb-8 max-w-md mx-auto">
+                        <h3 class="font-semibold mb-2">Your Submission ID</h3>
+                        <p class="bg-white py-2 px-4 rounded-lg border border-gray-200 font-mono text-center pulse" id="submission-id">FND-2023-12345</p>
+                        <p class="text-sm text-gray-500 mt-2">Please save this ID for your reference</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="index.html" class="border border-gray-300 hover:border-indigo-500 text-gray-700 hover:text-indigo-600 px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                            <i class="fas fa-home mr-2"></i>
+                            Return to Home
+                        </a>
+                        <a href="directory.html" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center">
+                            <i class="fas fa-search mr-2"></i>
+                            Explore Directory
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
+                    <p class="text-gray-600">Everything you need to know about listing your business on FindSab.</p>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h3 class="font-semibold text-lg mb-2">How long does it take for my business to appear in the directory?</h3>
+                        <p class="text-gray-600">After submission, our team reviews your business information within 1-2 business days. Once approved, your business will be live on FindSab.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h3 class="font-semibold text-lg mb-2">Is it free to list my business on FindSab?</h3>
+                        <p class="text-gray-600">Yes, basic business listings are completely free. We also offer premium options with additional features to help your business stand out.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h3 class="font-semibold text-lg mb-2">Can I update my business information after submitting?</h3>
+                        <p class="text-gray-600">Yes, you can update your business information at any time by logging into your FindSab account or by contacting our support team with your submission ID.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h3 class="font-semibold text-lg mb-2">What types of businesses can be listed on FindSab?</h3>
+                        <p class="text-gray-600">FindSab welcomes all legitimate local businesses and professional services. This includes retail stores, restaurants, healthcare providers, tradespeople, consultants, and more.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h3 class="font-semibold text-lg mb-2">How do customers find my business on FindSab?</h3>
+                        <p class="text-gray-600">Customers can find your business through category browsing, location-based searches, or by searching for specific services or business names. Our platform is optimized to connect users with the local services they need.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="bg-indigo-600 text-white p-2 rounded-lg mr-2">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <span class="text-xl font-bold">FindSab</span>
+                    </div>
+                    <p class="text-gray-400 mb-4">Connecting communities with local businesses and professionals across Australia.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="directory.html" class="text-gray-400 hover:text-white transition-colors">Directory</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">How It Works</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">For Businesses</h3>
+                    <ul class="space-y-2">
+                        <li><a href="list-business.html" class="text-gray-400 hover:text-white transition-colors">List Your Business</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Business Resources</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Success Stories</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Advertising</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Support</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-2 text-indigo-400"></i>
+                            <span class="text-gray-400">123 Business St, Sydney, NSW 2000</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2 text-indigo-400"></i>
+                            <span class="text-gray-400">+61 2 1234 5678</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-indigo-400"></i>
+                            <span class="text-gray-400">info@findsab.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <div class="text-gray-400 mb-4 md:mb-0">
+                    &copy; 2023 FindSab. All rights reserved.
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors text-sm">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Form step navigation
+        const steps = document.querySelectorAll('.form-step');
+        const stepIndicators = document.querySelectorAll('.step-indicator');
+        const progressBarFill = document.getElementById('progress-bar-fill');
+        let currentStep = 1;
+        
+        function showStep(stepNumber) {
+            steps.forEach((step, index) => {
+                if (index + 1 === stepNumber) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+            
+            stepIndicators.forEach((indicator, index) => {
+                if (index + 1 === stepNumber) {
+                    indicator.classList.add('active');
+                    indicator.classList.remove('completed');
+                } else if (index + 1 < stepNumber) {
+                    indicator.classList.remove('active');
+                    indicator.classList.add('completed');
+                } else {
+                    indicator.classList.remove('active', 'completed');
+                }
+            });
+            
+            // Update progress bar
+            const progress = ((stepNumber - 1) / (steps.length - 1)) * 100;
+            progressBarFill.style.width = `${progress}%`;
+            
+            currentStep = stepNumber;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Next and Previous buttons
+        document.getElementById('next-step-1').addEventListener('click', () => {
+            // Validate step 1
+            const businessName = document.getElementById('business-name').value;
+            const businessCategory = document.getElementById('business-category').value;
+            const businessDescription = document.getElementById('business-description').value;
+            const businessType = document.querySelector('input[name="business-type"]:checked');
+            
+            if (!businessName || !businessCategory || !businessDescription || !businessType) {
+                alert('Please fill in all required fields before proceeding.');
+                return;
+            }
+            
+            showStep(2);
+        });
+        
+        document.getElementById('prev-step-2').addEventListener('click', () => {
+            showStep(1);
+        });
+        
+        document.getElementById('next-step-2').addEventListener('click', () => {
+            // Validate step 2
+            const contactName = document.getElementById('contact-name').value;
+            const contactEmail = document.getElementById('contact-email').value;
+            const contactPhone = document.getElementById('contact-phone').value;
+            const addressLine1 = document.getElementById('address-line1').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const postcode = document.getElementById('postcode').value;
+            
+            if (!contactName || !contactEmail || !contactPhone || !addressLine1 || !city || !state || !postcode) {
+                alert('Please fill in all required fields before proceeding.');
+                return;
+            }
+            
+            showStep(3);
+        });
+        
+        document.getElementById('prev-step-3').addEventListener('click', () => {
+            showStep(2);
+        });
+        
+        document.getElementById('next-step-3').addEventListener('click', () => {
+            // Populate review section
+            populateReviewSection();
+            showStep(4);
+        });
+        
+        document.getElementById('prev-step-4').addEventListener('click', () => {
+            showStep(3);
+        });
+        
+        // Business category "Other" field toggle
+        document.getElementById('business-category').addEventListener('change', function() {
+            const otherCategoryContainer = document.getElementById('other-category-container');
+            if (this.value === 'other') {
+                otherCategoryContainer.style.display = 'block';
+                document.getElementById('other-category').setAttribute('required', 'required');
+            } else {
+                otherCategoryContainer.style.display = 'none';
+                document.getElementById('other-category').removeAttribute('required');
+            }
+        });
+        
+        // Character counter for description
+        document.getElementById('business-description').addEventListener('input', function() {
+            const maxLength = 500;
+            const currentLength = this.value.length;
+            document.getElementById('description-chars').textContent = `${currentLength}/${maxLength}`;
+            
+            if (currentLength > maxLength) {
+                this.value = this.value.substring(0, maxLength);
+                document.getElementById('description-chars').textContent = `${maxLength}/${maxLength}`;
+            }
+        });
+        
+        // Image upload preview
+        const imageInputs = document.querySelectorAll('.image-upload input[type="file"]');
+        imageInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const label = this.nextElementSibling;
+                
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        // Clear the label content
+                        label.innerHTML = '';
+                        
+                        // Create and append image
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Business image';
+                        label.appendChild(img);
+                    };
+                    
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        });
+        
+        // Add service/product
+        document.getElementById('add-service').addEventListener('click', function() {
+            const servicesContainer = document.getElementById('services-container');
+            const serviceItems = servicesContainer.querySelectorAll('.service-item');
+            
+            // Clone the first service item
+            const newServiceItem = serviceItems[0].cloneNode(true);
+            
+            // Clear input values
+            newServiceItem.querySelectorAll('input').forEach(input => {
+                input.value = '';
+            });
+            
+            // Show remove button
+            const removeButton = newServiceItem.querySelector('.remove-service');
+            removeButton.style.visibility = 'visible';
+            
+            // Add event listener to remove button
+            removeButton.addEventListener('click', function() {
+                servicesContainer.removeChild(newServiceItem);
+            });
+            
+            // Append new service item
+            servicesContainer.appendChild(newServiceItem);
+        });
+        
+        // Show/hide time selects based on day checkbox
+        const dayCheckboxes = document.querySelectorAll('input[id^="hours-"]');
+        dayCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const day = this.id.replace('hours-', '');
+                const openSelect = document.querySelector(`select[name="${day}-open"]`);
+                const closeSelect = document.querySelector(`select[name="${day}-close"]`);
+                
+                if (this.checked) {
+                    openSelect.value = '09:00';
+                    closeSelect.value = '17:00';
+                } else {
+                    openSelect.value = 'closed';
+                    closeSelect.value = 'closed';
+                }
+            });
+        });
+        
+        // Populate review section
+        function populateReviewSection() {
+            // Business details
+            document.getElementById('review-business-name').textContent = document.getElementById('business-name').value || '-';
+            
+            const categorySelect = document.getElementById('business-category');
+            let categoryText = categorySelect.options[categorySelect.selectedIndex].text;
+            if (categoryText === 'Select a category') categoryText = '-';
+            if (categorySelect.value === 'other') {
+                categoryText = document.getElementById('other-category').value || 'Other';
+            }
+            document.getElementById('review-business-category').textContent = categoryText;
+            
+            document.getElementById('review-business-description').textContent = document.getElementById('business-description').value || '-';
+            document.getElementById('review-year-established').textContent = document.getElementById('year-established').value || '-';
+            
+            const businessType = document.querySelector('input[name="business-type"]:checked');
+            let businessTypeText = '-';
+            if (businessType) {
+                switch (businessType.value) {
+                    case 'physical':
+                        businessTypeText = 'Physical Location';
+                        break;
+                    case 'online':
+                        businessTypeText = 'Online Business';
+                        break;
+                    case 'mobile':
+                        businessTypeText = 'Mobile Business';
+                        break;
+                    case 'hybrid':
+                        businessTypeText = 'Hybrid';
+                        break;
+                }
+            }
+            document.getElementById('review-business-type').textContent = businessTypeText;
+            
+           // <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9429edf95522e7ca',t:'MTc0NzcyNDEzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>//
